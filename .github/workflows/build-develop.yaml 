@@ -1,0 +1,36 @@
+name: Flutter Build APK and Deploy
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v1
+        with:
+          flutter-version: '3.10.0'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Create key.jks file
+        run: |
+          echo "${{ secrets.JKS_B64 }}" | base64 --decode > android/app/key.jks
+          echo "${{ secrets.KEY_PROPERTIES }}" > android/key.properties
+      - name: Build APK
+        run: flutter build apk --release
+
+      - name: Install Firebase CLI
+        run: |
+          curl -sL https://firebase.tools | bash
+      - name: Distribute APK to Firebase App Distribution
+        run: |
+          firebase appdistribution:distribute build/app/outputs/flutter-apk/app-release.apk --app {{secrets.FIREBASE_APPID}}  --release-notes "Automatic release with Github Actions" --groups pruebas --token ${{ secrets.FIREBASE_TOKEN }}
+          
