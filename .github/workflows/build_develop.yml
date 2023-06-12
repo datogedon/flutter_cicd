@@ -1,4 +1,4 @@
-name: Flutter Build APK and Deploy
+name: Build APK Develop
 
 on:
   push:
